@@ -32,7 +32,7 @@ COPY --chown=appuser:appuser pyproject.toml ./pyproject.toml
 
 # Install dependencies
 RUN --mount=type=cache,target=/root/.cache/uv \
-    uv venv --python 3.11 && \
+    uv venv --python 3.10 && \
     uv sync --extra cpu
 
 # Copy project files including models
