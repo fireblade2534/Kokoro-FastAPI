@@ -3,6 +3,7 @@
 import io
 import json
 import os
+import re
 import tempfile
 from typing import AsyncGenerator, Dict, List, Union
 
@@ -137,7 +138,8 @@ async def stream_audio_chunks(
             voice=voice_name,
             speed=request.speed,
             output_format=request.response_format,
-            lang_code=request.lang_code or request.voice[0],
+            lang_code=request.lang_code or settings.default_voice_code or voice_name[0].lower(),
+            normalization_options=request.normalization_options
         ):
             # Check if client is still connected
             is_disconnected = client_request.is_disconnected
@@ -195,7 +197,9 @@ async def create_speech(
             if request.return_download_link:
                 from ..services.temp_manager import TempFileWriter
 
-                temp_writer = TempFileWriter(request.response_format)
+                # Use download_format if specified, otherwise use response_format
+                output_format = request.download_format or request.response_format
+                temp_writer = TempFileWriter(output_format)
                 await temp_writer.__aenter__()  # Initialize temp file
 
                 # Get download path immediately after temp file creation
@@ -203,7 +207,7 @@ async def create_speech(
 
                 # Create response headers with download path
                 headers = {
-                    "Content-Disposition": f"attachment; filename=speech.{request.response_format}",
+                    "Content-Disposition": f"attachment; filename=speech.{output_format}",
                     "X-Accel-Buffering": "no",
                     "Cache-Control": "no-cache",
                     "Transfer-Encoding": "chunked",
