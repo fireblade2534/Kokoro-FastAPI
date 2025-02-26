@@ -84,10 +84,50 @@ def process_text(text: str, language: str = "a") -> List[int]:
 
     return process_text_chunk(text, language)
 
+def get_protected_areas(text: str) -> List[Tuple[int,int]]:
+    protected_areas = []
+    start_index = -1
+    level = 0
+    for char in range(0, len(text)):
+        if text[char] in "([{":
+            if level == 0:
+                start_index = char
+            level+=1
+        elif text[char] in ")]}":
+            level=max(level - 1,0)
+            if level == 0 and start_index != -1:
+                protected_areas.append((start_index,char))
+                start_index = -1
+    if level > 0:
+        protected_areas.append((start_index,len(text) - 1))
+        
+    return protected_areas
 
-def get_sentence_info(text: str) -> List[Tuple[str, List[int], int]]:
+def get_sentence_info(text: str, protected_areas: List[Tuple[int,int]]) -> List[Tuple[str, List[int], int]]:
     """Process all sentences and return info."""
-    sentences = re.split(r"([.!?;:])(?=\s|$)", text)
+    
+    sentences = [text]
+    text+=" "
+    
+    last_split_point = 0
+    protection_index = 0
+    protected_areas_count = len(protected_areas)
+    for char in range(0, len(text) - 1):
+        if text[char] in ".!?;:]" and text[char + 1] == " ":
+            if protected_areas_count == 0 or (char < protected_areas[protection_index][0] and char > protected_areas[protection_index][1]):
+                last_item = sentences[-1]
+                
+                sentences[-1] = last_item[:char - last_split_point + 1].strip()
+                split_item = last_item[char - last_split_point + 1:].strip()
+                if split_item != "":
+                    sentences.append(split_item)
+                last_split_point = char + 1
+                
+        if protected_areas_count > 0:
+            if char >= protected_areas[protection_index][1]:
+                protection_index = min(protection_index + 1, protected_areas_count)
+        
+    print(sentences)
     results = []
     for i in range(0, len(sentences), 2):
         sentence = sentences[i].strip()
@@ -122,7 +162,8 @@ async def smart_split(
             logger.info("Skipping text normalization as it is only supported for english")
 
     # Process all sentences
-    sentences = get_sentence_info(text)
+    protected_areas = get_protected_areas(text)
+    sentences = get_sentence_info(text, protected_areas)
 
     current_chunk = []
     current_tokens = []
