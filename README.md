@@ -41,8 +41,8 @@ Refer to the core/config.py file for a full list of variables which can be manag
 # the `latest` tag can be used, but should not be considered stable as it may include `nightly` branch builds
 # it may have some bonus features however, and feedback/testing is welcome
 
-docker run -p 8880:8880 ghcr.io/remsky/kokoro-fastapi-cpu:v0.2.1 # CPU, or:
-docker run --gpus all -p 8880:8880 ghcr.io/remsky/kokoro-fastapi-gpu:v0.2.1  #NVIDIA GPU
+docker run -p 8880:8880 ghcr.io/remsky/kokoro-fastapi-cpu:v0.3.0 # CPU, or:
+docker run --gpus all -p 8880:8880 ghcr.io/remsky/kokoro-fastapi-gpu:v0.3.0  #NVIDIA GPU
 ```
 
 
