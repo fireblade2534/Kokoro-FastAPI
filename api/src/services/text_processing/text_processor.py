@@ -15,6 +15,7 @@ from .vocabulary import tokenize
 # Pre-compiled regex patterns for performance
 CUSTOM_PHONEMES = re.compile(r"(\[([^\]]|\n)*?\])(\(\/([^\/)]|\n)*?\/\))")
 
+SENTENCE_SPLIT = re.compile(r"(?<!\b(?:etc|e.g))(?<!\b(?:vs|eg))([.!?;:])(?=\s|$)", re.IGNORECASE)
 
 def process_text_chunk(
     text: str, language: str = "a", skip_phonemize: bool = False
@@ -91,7 +92,7 @@ def get_sentence_info(
     text: str, custom_phenomes_list: Dict[str, str]
 ) -> List[Tuple[str, List[int], int]]:
     """Process all sentences and return info."""
-    sentences = re.split(r"([.!?;:])(?=\s|$)", text)
+    sentences = SENTENCE_SPLIT.split(text)
     phoneme_length, min_value = len(custom_phenomes_list), 0
 
     results = []
